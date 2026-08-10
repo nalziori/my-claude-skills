@@ -13,6 +13,23 @@ PC you log into, instead of being stuck on the machine they were created on.
   runs a 4-step prep process for the live/AI-judge interview: a deep
   self-understanding walkthrough, a context-blind "fresh eyes" evaluator
   subagent, spoken mock Q&A, and a prepared self-directed question.
+- **ael-ledger-setup** — designs and adds an Agent Execution Ledger (AEL) to
+  an agent/pipeline project: an append-only SQLite structure recording every
+  decision cycle (Planning → Execution → Evidence → Verification →
+  Reflection → State) so decisions stay auditable after the fact.
+- **ael-ssot-debug** — for projects that already have an AEL, helps debug
+  why a specific past decision/cycle happened the way it did.
+- **engineering_memory** — keeps a persistent, written record of decisions,
+  experiments, regressions, and API/cost spend across a long-running
+  research-and-build project, so rationale survives context compaction and
+  session restarts.
+- **python_venv_creater** — creates and configures a Python virtual
+  environment (.venv) for a project: venv creation, pip upgrade, dependency
+  install, Jupyter kernel registration, and VSCode settings wiring.
+- **research_engine** — a research-first thinking protocol to load before
+  any non-trivial build/debug/improvement task: restate goals, build a
+  mental model, generate competing hypotheses, validate cheaply before a
+  full eval, and leave a decision trace.
 
 ## Setup on a new PC
 
