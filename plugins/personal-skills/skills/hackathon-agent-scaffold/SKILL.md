@@ -33,6 +33,8 @@ Then adapt the **Architecture Principles** section to the domain:
 - If the data is a document/RAG corpus, add a principle about retrieval scope and what happens when nothing relevant is retrieved.
 - If the problem statement mentions adversarial inputs (prompt injection, jailbreak attempts), keep and sharpen the existing guardrail principle — this is one of the most consistently rewarded patterns in past submissions.
 
+Fill in **3-1 Output Contract** and **3-2 Evidence Policy / Model-Failure Fallback** completely before any code exists — exact output columns, cross-field rules, one single-source-of-truth computation feeding every field, conservative defaults for missing/contradictory evidence, per-row fallback when the model layer fails. (Added after the September 2026 Orchestrate feedback: inconsistent output fields and a run that a single quota error could stop.) If the problem statement leaves any of these open, ask the user rather than inventing a rule.
+
 Leave the **Trace-One-Input Self-Check**, **Eval Loop Log**, and **Decision Log** sections structurally intact — these are the parts that carry over regardless of domain and are what the AI-judge interview tends to probe. Don't compress or remove them to save space.
 
 ## Step 3 — Customize eval_harness_ko.py / eval_harness_en.py
@@ -41,9 +43,29 @@ Start from `assets/eval_harness_ko.py` and `assets/eval_harness_en.py`. At minim
 
 Then extend `sanity_check()` for this problem's actual label space where one is known — e.g. reject predictions with labels outside the allowed set, not just flag skewed distributions. If the success metric isn't plain accuracy (e.g. weighted F1, or a custom penalty for false-escalations), replace the `score()` body accordingly and say so in a comment — don't silently keep accuracy if it doesn't match what the problem asks for.
 
+Also add a `validate_row()` that encodes the cross-field rules from CLAUDE.md section 3-1, and have `sanity_check()` call it on every prediction row, so contradictions (e.g. status says affordable but amount is zero) fail loudly instead of scoring quietly.
+
 Keep `eval_loop_reminder()` — it's a low-cost nudge toward the build-run-inspect-fix-rerun habit that past write-ups consistently flag as separating a strong submission from a quick prototype.
 
 Before handing the script back, run it once against a tiny synthetic sample (3-5 rows) you construct from the problem's schema, to confirm it actually runs against the real column names rather than just looking correct.
+
+## Step 3.5 — Build the AEL (Agent Execution Ledger) automatically
+
+The September 2026 run shipped without an AEL, so decisions could not be traced after the fact. Do not skip it this time and do not wait to be asked: once the contract (CLAUDE.md 3-1/3-2) is written, run the two skills below.
+
+1. Invoke the Skill tool with `skill: "ael-ledger-setup"`. Give it the cycle definition (one request/row = one cycle), and tell it to store the ledger in its own file (e.g. `data/ael.db`) so reruns never rebuild it. Do this at the very start of coding so the first agent function is written with ledger calls in it, not patched in later.
+2. Every eval-loop iteration and every "why did this row come out like that?" question goes through `skill: "ael-ssot-debug"` first, before reading code.
+3. Have the ledger's Verification stage call the same `validate_row()` as the eval harness, so contract violations are recorded per cycle.
+
+Copy the section below into the generated `CLAUDE.md` files (after 3-2) so the rule survives context resets.
+
+```
+## 3-3. AEL usage rule
+- Ledger file: `data/ael.db` (append-only, never dropped on rerun). Built with the `ael-ledger-setup` skill at project start.
+- One cycle = one request/row. Verification stage runs `validate_row()`.
+- To debug a row or a low-confidence pattern: use the `ael-ssot-debug` skill first, then code.
+- Interview prep: the ledger is the evidence for "how did you verify this decision?".
+```
 
 ## Step 4 — Deliver
 

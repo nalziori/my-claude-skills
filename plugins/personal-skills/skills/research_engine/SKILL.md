@@ -79,6 +79,12 @@ what feedback signal exists (an eval score, user correction, a log), and where i
 things are most likely to break. If you can't answer "where would this break" yet, you don't have
 a mental model — read more code/data first.
 
+For pipelines that emit several related output fields (status, amount, date, plan...), also
+check: **does every field come from one selected decision, or is each computed separately (or at
+a different point, e.g. before vs. after an adjustment)?** Fields derived at different points can
+contradict each other even when each is individually "correct" — a September 2026 Orchestrate
+judge flagged exactly this. Write down the cross-field rules and check them before tuning accuracy.
+
 ### 3. Generate hypotheses (3-5, not 1)
 
 Never implement the first idea that comes to mind. For each hypothesis, briefly note:

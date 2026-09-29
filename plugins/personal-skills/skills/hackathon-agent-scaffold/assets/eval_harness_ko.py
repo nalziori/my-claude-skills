@@ -21,6 +21,27 @@ def load_csv(path: str) -> list[dict]:
         return list(csv.DictReader(f))
 
 
+def validate_row(row: dict) -> list[str]:
+    """출력 한 행의 계약 위반 목록을 반환 (빈 리스트 = 정상).
+
+    CLAUDE.md 3-1의 필드 간 규칙을 여기에 코드로 옮긴다. 예:
+        if row["status"] == "rejected" and row["amount"]: problems.append("rejected인데 amount 있음")
+    에이전트도 출력 파일을 쓰기 직전에 같은 함수를 돌려야 한다.
+    """
+    problems: list[str] = []
+    return problems
+
+
+def check_contract(preds: list[dict], id_col: str = "id") -> int:
+    """모든 행에 validate_row를 돌려 위반을 출력하고 위반 개수를 반환"""
+    total = 0
+    for row in preds:
+        for problem in validate_row(row):
+            total += 1
+            print(f"[contract] {row.get(id_col)}: {problem}", file=sys.stderr)
+    return total
+
+
 def sanity_check(preds: list[dict], label_col: str = "decision") -> None:
     """극단적 전략(단일 라벨로 몰아 찍기) 여부를 미리 경고"""
     counts = Counter(row[label_col] for row in preds)
@@ -89,6 +110,9 @@ def main():
     golds = load_csv(args.gold)
 
     sanity_check(preds, label_col=args.label_col)
+    violations = check_contract(preds, id_col=args.id_col)
+    if violations:
+        print(f"[contract] {len(preds)}행 중 위반 {violations}건", file=sys.stderr)
     result = score(preds, golds, id_col=args.id_col, label_col=args.label_col)
 
     print(f"\n정확도: {result['accuracy']:.2%} ({result['n_gold']}건 중)")

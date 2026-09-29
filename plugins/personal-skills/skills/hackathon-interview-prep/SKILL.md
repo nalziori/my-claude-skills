@@ -30,6 +30,12 @@ not because Claude guessed well from general knowledge. That means the best
 prep-question generator is a reviewer with the **same information the real
 judge has, and nothing more** — not one with the whole project history.
 
+A fourth finding (HackerRank Orchestrate September 2026 judge feedback): the
+answers had depth but arrived after long pauses, and stayed conceptual when
+asked "where is this implemented?" or "how did it do on the final outputs?".
+So drill **delivery structure** as well as content — see the answer-first
+pattern and code-location map in Step 3.
+
 Do not run this before the build is functionally complete — it consumes
 review/practice time and needs finished submission artifacts (code.zip
 contents, output.csv, README) to work from.
@@ -102,6 +108,23 @@ content by this point; the gap is spoken delivery.
   "structured output schema," "held-out test set" are for the current
   project) — drill saying each term/concept as a full spoken sentence, not
   just recognizing it when read.
+- **Answer first, then one walk-through.** The first ~15 seconds must contain
+  the takeaway as a single sentence; only then one concrete example. Practice
+  this hardest on the topics that felt heaviest (e.g. recurrence detection,
+  safety calibration).
+- **Frame every parameter/number as: what it does, where it lives in the
+  system, how it was checked.** A bare list of calibrated numbers is hard to
+  follow.
+- **Code-location map.** Before the mock Q&A, build a one-page table:
+  concept → file:function (and line if stable) → the end-to-end check that
+  covers it → final metric. Drill "where is this implemented?" and "how did it
+  do on the final outputs?" until the answer names a file and a number without
+  looking.
+- **Ledger as evidence.** If the project has an AEL (`data/ael.db`), pull one
+  real cycle with the `ael-ssot-debug` skill and rehearse "how did you verify
+  this decision?" by walking that row end to end.
+- **Never go silent.** If thinking, say the direction first ("Short answer: X,
+  let me walk through why") rather than pausing.
 - Time the answers if useful, but the target is fluency over speed for its
   own sake.
 - If the user stumbles on a concept (not just the phrasing), that's a sign

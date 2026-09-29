@@ -22,6 +22,27 @@ def load_csv(path: str) -> list[dict]:
         return list(csv.DictReader(f))
 
 
+def validate_row(row: dict) -> list[str]:
+    """Return contract violations for one output row (empty list = OK).
+
+    Encode the cross-field rules from CLAUDE.md section 3-1 here, e.g.:
+        if row["status"] == "rejected" and row["amount"]: problems.append("rejected but amount set")
+    The same function should run in the agent right before writing the output file.
+    """
+    problems: list[str] = []
+    return problems
+
+
+def check_contract(preds: list[dict], id_col: str = "id") -> int:
+    """Run validate_row on every row and print each violation; returns the violation count."""
+    total = 0
+    for row in preds:
+        for problem in validate_row(row):
+            total += 1
+            print(f"[contract] {row.get(id_col)}: {problem}", file=sys.stderr)
+    return total
+
+
 def sanity_check(preds: list[dict], label_col: str = "decision") -> None:
     """Warn if predictions are dominated by a single label (degenerate strategy)."""
     counts = Counter(row[label_col] for row in preds)
@@ -90,6 +111,9 @@ def main():
     golds = load_csv(args.gold)
 
     sanity_check(preds, label_col=args.label_col)
+    violations = check_contract(preds, id_col=args.id_col)
+    if violations:
+        print(f"[contract] {violations} violation(s) in {len(preds)} rows", file=sys.stderr)
     result = score(preds, golds, id_col=args.id_col, label_col=args.label_col)
 
     print(f"\nAccuracy: {result['accuracy']:.2%} (of {result['n_gold']} items)")

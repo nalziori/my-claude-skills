@@ -8,6 +8,7 @@ this log so a future change can be checked against them by hand.
 ## [<date/time>] <short title of what broke>
 
 What broke:          <symptom, concretely>
+Raw error output:     <exact traceback / error text pasted verbatim, not a summary; "n/a" if none>
 Minimal repro:        <the smallest input/state that reproduces it>
 Root cause:            <why it actually happened — not just what the symptom was>
 Fix:                   <what changed>
